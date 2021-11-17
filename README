@@ -1,0 +1,103 @@
+######################
+# PAYROLL SYS
+This system is based on current IRS code with Utah state tax calculation.
+Input is a Comma-Seperated-File which associates the employee to pay due.
+
+Payroll is a very complex system to code. Below is a HowTo.
+From CSV this code will output employee payroll stubs as an encrypted pdf emailed out respectively.
+# CONTENTS ###############
+ee 	- employee info files
+email	- pdf stubs plain & encrypted 
+last 	- last stub paid per ee csv & ytd csv
+src 	- payroll code files
+tables 	- annual-static files: tax, VAR
+ytd 	- dir per payroll, has individual & ttl csv fils
+INPUT.xls - spreadsheet
+# arrays #################
+@tax 	- tax tables
+@var	- payroll variables
+@ee	- employee static info
+@pr	- new stub
+@last	- prior stub
+@ytd	- ytd stub
+@time 	- timeclock detail
+# STEP 0 #################
+open INPUT.xls 
+first sheet, "INPUT", update employee time
+save & close
+# STEP 1 #################
+each employee has a same-structure-file of data
+for each ee file read into 3-dimensional array
+@ee[$name][$attribute]
+	$ee[0][0] = molly
+	$ee[0][7] = 8751
+
+use w4 form to fill in status information
+single married headofhouse
+number of children
+number of dependents
+	married with 2 children under 17
+	$ee{$emp_name}[9] = m_2_0
+# STEP 2 #################
+verify type of payroll (weekly or biweekly) 
+refer to "tables/HOWTO_Tax_Tables" to create tables at start of every year
+
+load tax tables into a 3-dimensional array
+@table[$status][$exemption]
+	$table[0][2] = single with 2 exemptions
+# STEP 3 #################
+read INPUT.xls 
+only the second sheet "TTL" will be read
+
+populate a 2-dimensional array
+@pr[$ee][$attribute]
+	$pr[2][4] = bill's PTO
+	$pr[2][5] = bill's OT
+# STEP 4 #################
+calculate gross income
+use @ee & @pr
+# STEP 5 #################
+reduce gross income by deductions
+update @pr
+# STEP 6 #################
+reduce gross income by tax
+update @pr
+# STEP 7 #################
+for each ee 
+	open "last/" csv file
+	create a new array of old data 
+	concatenate @pr data  
+
+read "last/ytd.csv" into @oldytd 
+use @oldytd & @pr to calc @newytd
+# STEP 8 #################
+create new ee payroll dir 
+copy new csv into ee "$ee.csv" file
+# STEP 9 #################
+read INPUT.xls sheet "INPUT"
+each ee will have a 24x15 array called @time[$ee][]
+# STEP 10 ################
+create pdf stub from @pr & @time 
+encrypt pdf stub
+email to ee
+
+# HOW TO CREATE TAX TABLES
+IRS p15t
+extract the page (2020 page 52)
+ocr pdf
+cp the data to text
+
+there are 6 sections
+each section will have own txt file named 0-5
+
+Married 2, 3
+Single 0, 1
+Head 4, 5
+
+remove all comma
+add a comma between entries
+
+you will see a blank entry in each it means boundless
+add $100000 as a filler for this entry
+
+seperate each section into a different file
