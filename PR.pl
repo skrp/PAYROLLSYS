@@ -1,11 +1,8 @@
-#!/bin/perl
+use strict; use warnings;
 use PDF::API2;
 use File::Copy;
 ###################################
 # PR - payroll computation system
-###################################
-use strict; use warnings;
-use File::Copy;
 # DATA STRUCT #####################
 my ($input) = @ARGV;
 die "ARG1 input-file\n" unless (defined $input);
